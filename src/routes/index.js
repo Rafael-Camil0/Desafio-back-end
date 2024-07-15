@@ -1,6 +1,6 @@
 const Router = require("express")
 
-const userRoutes = require('./user.routes')
+const userRoutes = require('./user.route')
 const movieNotesRouter = require('./moviesNotes.route')
 const movieTagsRouter = require('./moviesTags.route')
 

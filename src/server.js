@@ -25,6 +25,6 @@ app.use((error, request, response, next) => {
       status: 'error',
       message: 'Internal server error'
     })
-  })
+})
 
 app.listen('3000',()=> console.log('Aplicação rodando na porta 3000'))

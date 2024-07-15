@@ -1,6 +1,9 @@
 const knex = require('../database/knex/index.js')
 const AppError = require('../utils/AppError.js')
-
+const Ajv = require('ajv').default
+const ajv = new Ajv({allErrors:true}); 
+require("ajv-errors")(ajv)
+const validator = require("../schema/validator")
 
 
 
@@ -9,14 +12,28 @@ class MovieNotes {
         const {title,description,rating,tags} = request.body
         const{user_id} = request.params
         
+        const isDataValid = await ajv.validate(validator.MovieNotes, {user_id,title,description,rating,tags})
 
-        if(rating < 0 || rating > 5||!rating){
-            throw new AppError("O 'rating' tem que estar entre 0 e 5",400)
+        if ( !isDataValid ) {
+            let messages = ajv.errors.map( i => { 
+                return { 
+                    property: i.instancePath ||i.params.errors||i.params, 
+                    message: i.message 
+                }
+            })
+
+            response.status(400).json(
+                { 
+                   status: 400, 
+                   message: 'Bad Request, error JSON', 
+                   errors: messages ,
+                   errorCode: '11005' 
+               }
+            )
+            console.log(ajv.errors)
+            return
         }
-        if(tags.length == 0){
-            throw new AppError("É necessario anexar ao menos uma Tag",400) 
-        }
-       
+
         const [id] = await knex("movie_notes").insert({
             title,
             description,
@@ -38,6 +55,8 @@ class MovieNotes {
         await knex('movie_tags').insert(tagsEntitys)
         response.json()
     }
+
+
     async update(request,response){
         const {title,description,rating,tags} = request.body 
         const {id} = request.params
@@ -61,6 +80,8 @@ class MovieNotes {
         response.json(note)
 
     }
+
+
     async findByid(request,response){
         const {id} = request.params
 
@@ -80,6 +101,8 @@ class MovieNotes {
 
 
     }
+
+
     async delete(request,response){
         const {id} = request.params
 
